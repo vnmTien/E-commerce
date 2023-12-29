@@ -8,21 +8,25 @@ const register = asyncHandler(async (req, res) => {
             sucess: false,
             message: "Missing inputs"
         });
-        
-    const dataUser = await userModel.create(req.body);
 
-    if (!dataUser) 
-        return res.status(400).json({
-            sucess: false,
-            message: "Creating User is not sucessfull!"
-        });
+    const emailUser = await userModel.findOne({email})
+    if (emailUser) 
+        throw new Error("This Email has exsited!");
+    else {    
+        const newUser = await userModel.create(req.body);
 
-    return res.status(200).json({
-        sucess: dataUser ? true : false,
-        message: "User created successfully!",
-        dataUser
-    })
+        if (!newUser) 
+            return res.status(400).json({
+                sucess: false,
+                message: "Creating User is not sucessfull!"
+            });
 
+        return res.status(200).json({
+            sucess: newUser ? true : false,
+            message: "User created successfully!",
+            newUser
+        })
+    }
 });
 
 module.exports = {
