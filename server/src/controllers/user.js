@@ -1,6 +1,7 @@
 const userModel = require("../models/user.model");
 const asyncHandler = require("express-async-handler");
 const { generateAccessToken, generateRefreshToken } = require("../middlewares/jwt");
+const jwt = require("jsonwebtoken");
 
 const register = asyncHandler(async (req, res) => {
     const { email, password, firstname, lastname } = req.body;
@@ -10,13 +11,13 @@ const register = asyncHandler(async (req, res) => {
             message: "Missing inputs"
         });
 
-    const emailUser = await userModel.findOne({email})
-    if (emailUser) 
+    const emailUser = await userModel.findOne({ email })
+    if (emailUser)
         throw new Error("This Email has exsited!");
-    else {    
+    else {
         const newUser = await userModel.create(req.body);
 
-        if (!newUser) 
+        if (!newUser)
             return res.status(400).json({
                 sucess: false,
                 message: "Register is not sucessfull!"
@@ -39,7 +40,7 @@ const login = asyncHandler(async (req, res) => {
         });
 
     // mongodb trả về 1 intent obj
-    const response = await userModel.findOne({email})
+    const response = await userModel.findOne({ email })
     // console.log(userModel.findOne({email}));
     // console.log(await response.isCorrectPassword(password)); 
     if (response && await response.isCorrectPassword(password)) {
@@ -77,8 +78,26 @@ const getCurrent = asyncHandler(async (req, res) => {
     });
 });
 
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    // get token from cookies
+    const cookie = req.cookies;
+    // check existence of token 
+    if (!cookie || !cookie.refreshToken) throw new Error('No Refresh Token in Cookies');
+    // check sự hơp lệ (còn hạn dùng) hay ko
+    jwt.verify(cookie.refreshToken, process.env.JWT_SECRET, async (err, decode) => {
+        if (err) throw new Error('Invalid Refresh Token!');
+        // check xem token này có khớp vs token lưu trong database hay ko
+        const response = await userModel.findOne({ _id: decode._id, refreshToken: cookie.refreshToken })
+        return res.status(200).json({
+            success: response ? true : false,
+            newAccessToken: response ? generateAccessToken(response._id, response.role) : "Refresh Token not matched!"
+        });
+    });
+});
+
 module.exports = {
     register,
     login,
-    getCurrent
+    getCurrent,
+    refreshAccessToken
 }
