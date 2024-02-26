@@ -108,10 +108,25 @@ const logout = asyncHandler(async (req, res) => {
     });
 });
 
+// Client gửi mail
+// Server check email có hợp lệ hay không => Gửi mail + kèm theo link (password change token)
+// Client check mail => Click link
+// Client gửi api kèm token
+// Check token có giống vs token mà server gửi mail hay ko
+// Change password
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) throw new Error("Missing email");
+    const user = await userModel.findOne({ email });
+    if (!user) throw new Error("User not found");
+    
+});
+
 module.exports = {
     register,
     login,
     getCurrent,
     refreshAccessToken,
-    logout
+    logout,
+    forgotPassword
 }

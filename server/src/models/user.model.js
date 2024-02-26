@@ -75,7 +75,10 @@ userSchema.pre("save", async function(next) {
 userSchema.methods = {
     isCorrectPassword: async function (passwordLogin) {
         return await bcrypt.compare(passwordLogin, this.password); // Compare Password
-    }
+    },
+    createPasswordChangedToken: function () {
+
+    } 
 }
 
 //Export the model
