@@ -119,6 +119,10 @@ const forgotPassword = asyncHandler(async (req, res) => {
     if (!email) throw new Error("Missing email");
     const user = await userModel.findOne({ email });
     if (!user) throw new Error("User not found");
+    const resetToken = user.createPasswordChangedToken();
+    await user.save();
+
+    //
     
 });
 
