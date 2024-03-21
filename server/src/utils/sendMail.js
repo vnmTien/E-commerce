@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 const errHandler = require("../middlewares/errHandler");
 
-const sendMail = async ( email, html ) => {
+const sendMail = errHandler(async ( email, html ) => {
     let transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
@@ -22,6 +22,6 @@ const sendMail = async ( email, html ) => {
     });
 
     return info;
-}
+})
 
 module.exports = sendMail;
