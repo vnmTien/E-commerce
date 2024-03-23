@@ -2,7 +2,7 @@ const userModel = require("../models/user.model");
 const asyncHandler = require("express-async-handler");
 const { generateAccessToken, generateRefreshToken } = require("../middlewares/jwt");
 const jwt = require("jsonwebtoken");
-const sendMail = require("../utils/sendMail");
+const sendEmail = require("../utils/sendEmail");
 
 const register = asyncHandler(async (req, res) => {
     const { email, password, firstname, lastname } = req.body;
@@ -116,7 +116,7 @@ const logout = asyncHandler(async (req, res) => {
 // Check token có giống vs token mà server gửi mail hay ko
 // Change password
 const forgotPassword = asyncHandler(async (req, res) => {
-    const { email } = req.body;
+    const { email } = req.query;
     if (!email) throw new Error("Missing email");
     const user = await userModel.findOne({ email });
     if (!user) throw new Error("User not found");
@@ -127,10 +127,11 @@ const forgotPassword = asyncHandler(async (req, res) => {
     const html = `Please click on the link below to change your password. This link will expire within 15 minutes! <a href=${process.env.URL_SERVER}/api/user/reset-password/${resetToken}>Click here<a/>`
  
     const data = {
-        to: email,
+        email,
         html 
     }
-    const result = await sendMail(data);
+
+    const result = await sendEmail(data);
     return res.status(200).json({
         success: true,
         result

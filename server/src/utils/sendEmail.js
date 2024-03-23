@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
-const errHandler = require("../middlewares/errHandler");
+const asyncHandler = require("express-async-handler");
 
-const sendMail = errHandler(async ( email, html ) => {
+const sendEmail = asyncHandler(async ( email, html ) => {
     let transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
@@ -24,4 +24,4 @@ const sendMail = errHandler(async ( email, html ) => {
     return info;
 })
 
-module.exports = sendMail;
+module.exports = sendEmail;
