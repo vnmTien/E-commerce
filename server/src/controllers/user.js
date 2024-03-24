@@ -125,17 +125,16 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
     // create content for message
     const html = `Please click on the link below to change your password. This link will expire within 15 minutes! <a href=${process.env.URL_SERVER}/api/user/reset-password/${resetToken}>Click here<a/>`
- 
-    const data = {
-        email,
-        html 
-    }
-
-    const result = await sendEmail(data);
+    
+    const result = await sendEmail( email, html);
     return res.status(200).json({
         success: true,
         result
     })
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+
 });
 
 module.exports = {
@@ -144,5 +143,6 @@ module.exports = {
     getCurrent,
     refreshAccessToken,
     logout,
-    forgotPassword
+    forgotPassword,
+    resetPassword
 }
