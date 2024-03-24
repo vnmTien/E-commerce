@@ -136,6 +136,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 const resetPassword = asyncHandler(async (req, res) => {
     const { password, token } = req.body;
+    if (!password || !token) throw new Error("Missing inputs");
     const passwordResetToken = crypto.createHash('sha256').update(token).digest('hex');
     const user = await userModel.findOne({ passwordResetToken, passwordResetExpires: { $gt: Date.now() } }); // tgian trong Expires > tgian hiện tại => true
     if (!user) throw new Error("Invalid reset Token");
