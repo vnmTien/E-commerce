@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const { generateAccessToken, generateRefreshToken } = require("../middlewares/jwt");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
+const crypto = require("crypto");
 
 const register = asyncHandler(async (req, res) => {
     const { email, password, firstname, lastname } = req.body;
@@ -125,8 +126,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
     // create content for message
     const html = `Please click on the link below to change your password. This link will expire within 15 minutes! <a href=${process.env.URL_SERVER}/api/user/reset-password/${resetToken}>Click here<a/>`
-    
-    const result = await sendEmail( email, html);
+
+    const result = await sendEmail(email, html);
     return res.status(200).json({
         success: true,
         result
@@ -134,7 +135,20 @@ const forgotPassword = asyncHandler(async (req, res) => {
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
-
+    const { password, token } = req.body;
+    const passwordResetToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await userModel.findOne({ passwordResetToken, passwordResetExpires: { $gt: Date.now() } }); // tgian trong Expires > tgian hiện tại => true
+    if (!user) throw new Error("Invalid reset Token");
+    // save new password, passResetToken, passChangeAt, passResetExpires (tgian hết hạn token gửi cho ngdung, khi họ quên mật khẩu)
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordChangedAt = Date.now();
+    user.passwordResetExpires = undefined;
+    await user.save();
+    return res.status(200).json({
+        success: user ? true : false,
+        message: user ? "Updated password" : "Something went wrong"
+    });
 });
 
 module.exports = {
