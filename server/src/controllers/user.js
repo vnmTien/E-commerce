@@ -170,6 +170,7 @@ const deleteUser = asyncHandler(async (req, res) => {
     });
 });
 
+// User update information yourself
 const updateUser = asyncHandler(async (req, res) => {
     const { _id } = req.user;
     if(!_id || Object.keys(req.body).length === 0) throw new Error("Missing inputs");
@@ -178,6 +179,18 @@ const updateUser = asyncHandler(async (req, res) => {
         success: eUser ? true : false,
         updatedUser: eUser ? eUser : "Something went wrong" 
     });
+});
+
+// Admin update information of all users
+const updateUserByAdmin = asyncHandler(async (req, res) => {
+    const { uId } = req.params;
+    if(Object.keys(req.body).length === 0) throw new Error("Missing inputs");
+    const eUser = await userModel.findByIdAndUpdate(uId, req.body, { new: true }).select('-refreshToken -password');
+    console.log(eUser)
+    return res.status(200).json({
+        success: eUser ? true : false,
+        updatedUser: eUser ? eUser : "Something went wrong" 
+    });    
 });
 
 module.exports = {
@@ -190,5 +203,6 @@ module.exports = {
     resetPassword,
     getAll,
     deleteUser,
-    updateUser
+    updateUser,
+    updateUserByAdmin
 }

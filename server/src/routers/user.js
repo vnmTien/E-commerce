@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { register, login, getCurrent, refreshAccessToken, logout, forgotPassword, resetPassword, getAll, deleteUser, updateUser } = require('../controllers/user');
+const { register, login, getCurrent, refreshAccessToken, logout, forgotPassword, resetPassword, getAll, deleteUser, updateUser, updateUserByAdmin } = require('../controllers/user');
 const { verifyAccessToken, isAdmin } = require('../middlewares/verifyToken');
 
 router.post("/createUser", register);
@@ -11,6 +11,8 @@ router.get('/forgotpassword', forgotPassword);
 router.put('/resetpassword', resetPassword);
 router.get('/', [verifyAccessToken, isAdmin], getAll);
 router.delete('/', [verifyAccessToken, isAdmin], deleteUser);
-router.put('/current', verifyAccessToken, updateUser)
+router.put('/current', verifyAccessToken, updateUser);
+router.put('/:uId', [verifyAccessToken, isAdmin], updateUserByAdmin);
+
 
 module.exports = router;
