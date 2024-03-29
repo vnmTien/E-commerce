@@ -166,7 +166,17 @@ const deleteUser = asyncHandler(async (req, res) => {
     const dUser = await userModel.findByIdAndDelete(_id);
     return res.status(200).json({
         success: dUser ? true : false,
-        deleteUser: dUser ? `User and Mail ${dUser.email} deleted` : "No User Delete" 
+        deletedUser: dUser ? `User and Mail ${dUser.email} deleted` : "No User Delete" 
+    });
+});
+
+const updateUser = asyncHandler(async (req, res) => {
+    const { _id } = req.user;
+    if(!_id || Object.keys(req.body).length === 0) throw new Error("Missing inputs");
+    const eUser = await userModel.findByIdAndUpdate(_id, req.body, { new: true }).select('-refreshToken -password -role');
+    return res.status(200).json({
+        success: eUser ? true : false,
+        updatedUser: eUser ? eUser : "Something went wrong" 
     });
 });
 
@@ -179,5 +189,6 @@ module.exports = {
     forgotPassword,
     resetPassword,
     getAll,
-    deleteUser
+    deleteUser,
+    updateUser
 }
