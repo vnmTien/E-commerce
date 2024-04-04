@@ -18,10 +18,9 @@ var productSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    branch: {
+    brand: {
         type: String,
         required: true,
-        unique: true,
     },
     price: {
         type: Number,
@@ -36,17 +35,16 @@ var productSchema = new mongoose.Schema({
         default: 0,
     },
     // sp đã bán
-    sold: [{
+    sold: {
         type: Number,
         default: 0,
-    }],
+    },
     image: {
         type: Array,
-        ref: "Product",
     },
     color: {
         type: Boolean,
-        enum: ['Balck', 'White', 'Red', 'Green', 'Yellow', 'Blue', 'Pink', 'Silver', 'Violet'],
+        enum: ['Black', 'White', '', 'Green', 'Yellow', 'Blue', 'Pink', 'Silver', 'Violet'], // enum: nằm trong giá trị cho trc
     },
     ratings: [{
         start: { type: Number },
