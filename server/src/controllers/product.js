@@ -31,14 +31,29 @@ const getAllProducts = asyncHandler( async (req, res) => {
 });
 
 const updateProduct = asyncHandler( async (req, res) => {
-    const { pid } = req.params
-    const updatedProduct = await productModel.findByIdAndUpdate(pid, req.body)
+    const { pid } = req.params;
+    if(req.body && req.body.title) req.body.slug = slugify(req.body.title, {replacement: '-', lower: true});
+    const updatedProduct = await productModel.findByIdAndUpdate(pid, req.body, { new: true });
+    return res.status(200).json({
+        success: updatedProduct ? true : false,
+        updatedProduct: updatedProduct ? updatedProduct : "Cannot update product"
+    })
+});
+
+const deleteProduct = asyncHandler( async ( req, res) => {
+    const { pid } = req.params;
+    const deletedProduct = await productModel.findByIdAndDelete(pid);
+    return res.status(200).json({
+        success: deletedProduct ? true : false,
+        deletedProduct: deletedProduct ? deletedProduct : "Cannot delete product"
+    }); 
 });
 
 module.exports = {
     createProduct,
     getProduct,
     getAllProducts,
-    updateProduct
+    updateProduct,
+    deleteProduct
 }
 
