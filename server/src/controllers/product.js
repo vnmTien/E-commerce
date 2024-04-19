@@ -1,3 +1,4 @@
+const { response } = require('express');
 const productModel = require('../models/product.model');
 const asyncHandler = require('express-async-handler');
 const slugify = require('slugify'); // bỏ dấu tạo tên đường dẫn
@@ -19,15 +20,41 @@ const getProduct = asyncHandler( async (req, res) => {
     return res.status(200).json({
         success: product ? true : false,
         productData: product ? product : "Cannot get product"
-    }) 
+    })
 });
 
 const getAllProducts = asyncHandler( async (req, res) => {
-    const products = await productModel.find();
-    return res.status(200).json({
-        success: products ? true : false,
-        productsData: products ? products : "Cannot get products"
-    })     
+    const queries = { ...req.query };
+    // Tách các trường đặt biệt khỏi query
+    const excludeFields = ["limit", "sort", "page", "fields"];
+    excludeFields.forEach(el => delete queries[el]);
+
+    // Format lại các operators cho đúng cú pháp của mongoose DB
+    let queryString = JSON.stringify(queries);
+    replacedQueryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g, matchedEl => `$${matchedEl}`);
+    const formatedQueries = JSON.parse(replacedQueryString); // chuyển thành obj
+    
+    // Filtering
+    if(queries?.title) formatedQueries.title = { $regex: queries.title, $options: 'i' }; // "regex" : tìm tất cả sp chỉ cần có 1 từ giống, "i" : ko phân biệt hoa thường
+    let queryCommand = productModel.find(formatedQueries); // đang trong trạng thái pending
+
+    // Sorting
+    if(req.body.sort) {
+        const sortBy = req.body.sort.split(',').join(' '); // split: chuỗi string -> array dựa theo dấu gì đó | join: ngược lại vs split
+        queryCommand = queryCommand.sort(sortBy);
+    }
+
+    // Run Query
+    // Số lượng sp thoả điều kiện (counts) !== số lượng sp trả về 1 lần gọi API
+    queryCommand.exec(async (err, response) => {
+        if (err) throw new Error(err.message);
+        const counts = await productModel.find(formatedQueries).countDocuments();
+        return res.status(200).json({
+            success: response ? true : false,
+            products: response ? response : "Cannot get products",
+            counts
+        });
+    });     
 });
 
 const updateProduct = asyncHandler( async (req, res) => {
