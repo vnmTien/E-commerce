@@ -39,10 +39,22 @@ const getAllProducts = asyncHandler( async (req, res) => {
     let queryCommand = productModel.find(formatedQueries); // đang trong trạng thái pending
 
     // Sorting
-    if(req.body.sort) {
+    if(req.query.sort) {
         const sortBy = req.body.sort.split(',').join(' '); // split: chuỗi string -> array dựa theo dấu gì đó | join: ngược lại vs split
         queryCommand = queryCommand.sort(sortBy);
     }
+
+    // Fields limiting
+    if(req.query.fields) {
+        const fields = req.query.fields.split(',').join(' ');
+        queryCommand = queryCommand.select(fields);
+    }
+
+    // Pagination
+    const page = +req.query.page || 1; // + : chuyển string => number
+    const limit = +req.query.limit || process.env.LIMIT_PRODUCTS
+    const skip = (page - 1) * limit;
+    queryCommand.skip(skip).limit(limit);
 
     // Run Query
     // Số lượng sp thoả điều kiện (counts) !== số lượng sp trả về 1 lần gọi API
