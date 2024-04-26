@@ -52,8 +52,8 @@ const getAllProducts = asyncHandler( async (req, res) => {
 
     // Pagination
     const page = +req.query.page || 1; // + : chuyển string => number
-    const limit = +req.query.limit || process.env.LIMIT_PRODUCTS
-    const skip = (page - 1) * limit;
+    const limit = +req.query.limit || process.env.LIMIT_PRODUCTS // limit : số obj được lấy về trong 1 lần gọi API
+    const skip = (page - 1) * limit; // skip : số obj đc bỏ qua 
     queryCommand.skip(skip).limit(limit);
 
     // Run Query
@@ -62,9 +62,10 @@ const getAllProducts = asyncHandler( async (req, res) => {
         if (err) throw new Error(err.message);
         const counts = await productModel.find(formatedQueries).countDocuments();
         return res.status(200).json({
+            counts,
             success: response ? true : false,
-            products: response ? response : "Cannot get products",
-            counts
+            products: response ? response : "Cannot get products"
+            
         });
     });     
 });
